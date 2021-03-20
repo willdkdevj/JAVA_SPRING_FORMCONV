@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Lista de Convidados</title>
+	<link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet" />
+	<link th:href="@{/webjars/bootstrap/css/bootstrap-theme.min.css}" rel="stylesheet" />
+</head>
+<body>
+	<div>
+		<container>
+		<div class="panel panel-default" style="margin: 10px">
+			<div class="panel-heading">
+				<h1 class="panel-title">Lista de Convidados</h1>
+			</div>
+			
+			<div class="panel-body">
+				<form class="form-inline" method="post" th:object="${convidado}" th:action="@{/convidados}" style="margin: 20px 0">
+					<div class="form-group">
+						<input type="text" class="form-control" placeholder="Nome Completo" th:field="*{nome}" />
+						<input type="text" class="form-control" placeholder="Nº Acompanhantes" size="15" 
+								maxlength="4" th:field="*{quantidadeAcompanhantes}" />
+						<button type="submit" class="btn btn-primary">Adicionar</button>
+					</div>
+				</form>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Nome</th>
+							<th>Acompanhantes</th>
+						</tr>					
+					</thead>
+					<tbody>
+						<tr th:each="convidado : ${convidados}">
+							<td th:text="${convidado.nome}"></td>
+							<td th:text="${convidado.quantidadeAcompanhantes}"></td>
+						</tr>					
+					</tbody>
+				</table>
+			</div>
+		</div>
+		</container>
+	</div>
+</body>
+	<script th:src="@{/webjars/jquery/jquery.min.js}" />
+	<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}" />
+</html>
