@@ -1,16 +1,17 @@
 # Formulário (Simples) com Lista de Convidados com Spring Framework
 > Este projeto consiste na aplicação simples de uma ferramenta de gestão de um evento, nele foram utilizadas as tecnologias Spring Boot, Spring MVC, Spring Data, Spring Security e Thymeleaf, utilizando a facilidade do Spring Tool Suíte (STS) da IDE Eclipse, com integração com o gerenciador de banco de dados MySQL e com o gerenciamento de dependências realizadas com o Maven. 
+
 [![NPM Version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
 [![Downloads Stats][npm-downloads]][npm-url]
-
-No decorrer deste documento é apresentado com mais detalhes sua implementação, descrevendo como foi atribuido o Spring MVC na segmentação de  nossa aplicação a fim de definir camadas de responsabilidades para tratar o fluxo de requisições, facilitando a manutenção do código. Como implementamos o Spring Data JPA que nos dá diversas funcionalidades tornando simples a dinamica de operações com banco de dados e sua manutenção. Como foi aplicado o Spring Security a fim de colocar uma camada de segurança a aplicação permitindo só que tenha uma autentificação e autorização possa realizar modificações a ela através do banco de dados, LDAP ou memória. Já o Spring Boot trás a agilidade ao analisar nosso código e configurá-lo conforme nossas necessidades por meio dos *starters* agrupando as dependências.
 
 <img align="right" width="400" height="300" src="https://matheuspcarvalhoblog.files.wordpress.com/2018/05/spring-framework.png">
 
 ## Descrição da Aplicação
 A aplicação é bem simples, consiste na gestão de nomes de pessoas convidadas para um evento e a quantidade de acompanhantes que ele levará para o mesmo.
 A aplicação consiste em uma única tela com dois campos de entrada e texto, um para o nome e outro para a quantidade, respectivamente. Além disso, terá um botão de adicionar mais convidados a lista que é uma tabela a fim de mostrar quem já foi cadastrado.
+
+No decorrer deste documento é apresentado com mais detalhes sua implementação, descrevendo como foi atribuido o Spring MVC na segmentação de  nossa aplicação a fim de definir camadas de responsabilidades para tratar o fluxo de requisições, facilitando a manutenção do código. Como implementamos o Spring Data JPA que nos dá diversas funcionalidades tornando simples a dinamica de operações com banco de dados e sua manutenção. Como foi aplicado o Spring Security a fim de colocar uma camada de segurança a aplicação permitindo só que tenha uma autentificação e autorização possa realizar modificações a ela através do banco de dados, LDAP ou memória. Já o Spring Boot trás a agilidade ao analisar nosso código e configurá-lo conforme nossas necessidades por meio dos *starters* agrupando as dependências.
 
 ## Importação do Projeto Maven para Execução da Aplicação
 O Apache Maven é uma ferramenta de apoio a equipes que trabalham com projeto Java (mas não se restringe somente a Java), possibilitando a desenvolvedores a automatizar, gerenciar e padronizar a construção e publicação de suas aplicações, permitindo maior agilidade e qualidade ao produto.
@@ -75,6 +76,7 @@ public class GestaoFestaApplication {
 ```
 A anotação @SpringBootApplication informa que a classe pertence as configurações do Spring, além de definir o ponto de partida para a procura de mais componentes relacionados a aplicação, desta forma, todas as classes devem seguir a partir deste pacote para serem mapeados pelo Spring.
 
+### Spring MVC - Camada Controller
 A partir daqui podemos criar a estrutura MVC, que consiste na separação explicita das responsabilidades de cada componente do fluxo de requisições. O MVC é um acrônimo de Model, View e Controller que visa separar quem representa o objeto relacional (tabela do BD) que contém as informações da requisição, quem será reponsável por apresentar esta lógica ao cliente e quem terá a lógica de negócio para resolver uma requisição, respectivamente.
 
 Desta forma, a partir desta lógica foi criado o pacote controller em ``br.com.estudojavaspring.listaconvidados`` com a classe ConvidadoController.
@@ -106,7 +108,6 @@ E a partir dela foram criados os métodos para receber as requisições do clien
 ```
 O método anotado com @GetMapping informa para qual URL deve ser mapeada as requisições do tido GET, assim como, a anotação @PostMapping para receber requisições do tipo POST, mas elas estão sem a "rota" em seus atributos, isto ocorre porque como as duas recebem requisições da mesma página, desta forma, é possível unificá-las em uma única anotação omitindo desta maneira sua URL mais deixando-a explícita na classe, através da anotação @RequestMapping
 ```sh
-//Como as requisições (GET/POST) apontam para o mesmo destino é utilizada esta anotação para unificar
 @Controller
 @RequestMapping("/convidados")
 public class ConvidadosController {
@@ -138,6 +139,7 @@ public interface Convidados extends JpaRepository<Convidado, Long>{
 }
 ```
 
+### Spring MVC - Camada Model
 Seguindo o conceito do MVC também foi criado o pacote model em ``br.com.estudojavaspring.listaconvidados`` com a classe Convidado. Onde novamente, aplica-se o JPA/Hibernate para realizar as operações de CRUD em nosso banco de dados, sendo que cada classe representa uma entidade (tabela)
 do mesmo. O código ficou da seguinte forma:
 ```sh
