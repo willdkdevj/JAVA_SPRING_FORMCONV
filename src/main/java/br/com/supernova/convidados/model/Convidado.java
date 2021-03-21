@@ -6,14 +6,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-import org.hibernate.annotations.GenericGenerator;
-
 @Entity // Identifica para o Spring Data (JPA) que a Classe é uma representante de uma Entidade (BD)
 public class Convidado implements Serializable{
 	
 	@Id  // Identifica que é o ID (PK) da Entidade do Banco de Dados
-	@GeneratedValue(generator ="increment")
-	@GenericGenerator(name="increment", strategy="increment")// Informa para o Spring Data gerar conforme suas políticas o próximo ID para o BD
+	@GeneratedValue
 	private Long id;
 	
 	private String nome;
