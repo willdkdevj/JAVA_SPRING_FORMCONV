@@ -1,9 +1,10 @@
 # Formulário (Simples) com Lista de Convidados com Spring Framework
 > Este projeto consiste na aplicação simples de uma ferramenta de gestão de um evento, nele foram utilizadas as tecnologias Spring Boot, Spring MVC, Spring Data, Spring Security e Thymeleaf, utilizando a facilidade do Spring Tool Suíte (STS) da IDE Eclipse, com integração com o gerenciador de banco de dados MySQL e com o gerenciamento de dependências realizadas com o Maven. 
 
-[![NPM Version][npm-image]][npm-url]
-[![Build Status][travis-image]][travis-url]
-[![Downloads Stats][npm-downloads]][npm-url]
+[![Spring Badge](https://img.shields.io/badge/-Spring-brightgreen?style=flat-square&logo=Spring&logoColor=white&link=https://spring.io/)](https://spring.io/)
+[![Maven Badge](https://img.shields.io/badge/-Maven-000?style=flat-square&logo=Maven&logoColor=white&link=https://maven.apache.org/)](https://maven.apache.org/)
+[![MySQL Badge](https://img.shields.io/badge/-MySQL-blue?style=flat-square&logo=MySQL&logoColor=white&link=https://www.mysql.com/)](https://www.mysql.com/)
+
 
 <img align="right" width="400" height="300" src="https://matheuspcarvalhoblog.files.wordpress.com/2018/05/spring-framework.png">
 
@@ -128,12 +129,8 @@ Isto é possível por que a interface Convidados estende a interface JpaReposito
 package br.com.estudojavaspring.listaconvidados.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import br.com.supernova.convidados.model.Convidado;
 
-/* 
- * Não é preciso inserir a anotação @Repository pois estamos estendendo a interface JpaRepository
- */
 public interface Convidados extends JpaRepository<Convidado, Long>{
 
 }
@@ -151,10 +148,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-@Entity // Identifica para o Spring Data (JPA) que a Classe é uma representante de uma Entidade (BD)
+@Entity 
 public class Convidado implements Serializable{
 	
-	@Id  // Identifica que é o ID (PK) da Entidade do Banco de Dados
+	@Id  
 	@GeneratedValue
 	private Long id;
 	
@@ -193,14 +190,70 @@ A configuração (default) do Spring Boot implementado com a biblioteca do Thyme
 
 O ``xmlns`` presente na tag ``<html>`` especifica o *namespace* XML ao documento, que significa que sempre deverá ser aberto e fechado as tag's HTML por se tratar de um documento do tipo XHTML, note que também existe o ``xmlns:th`` que define que será permitido o uso das propriedades do Thymeleaf.
 
+A importação do Bootstrap, utiliza a biblioteca WebJars, para que não seja necessário realizar o download para dentro do projeto. O CSS do Bootstrap utilizado fica dentro do JAR do WebJars, que é colocado como dependência do projeto através do Maven. Desta maneira, foi inserido as dependências ``org.webjars.bootstrap`` e ``org.webjars.webjars-locator`` no arquivo pom.xml, que possibilita que não seja necessário a inclusão da versão do Bootstrap na URL usada para importar o CSS.
+```sh
+<dependency>
+	<groupId>org.webjars</groupId>
+	<artifactId>webjars-locator</artifactId>
+</dependency>
+<dependency>
+	<groupId>org.webjars</groupId>
+	<artifactId>bootstrap</artifactId>
+	<version>3.3.7</version>
+</dependency>
+```
 
-A expressão ${} interpreta variáveis locais ou disponibilizadas pelo controller.
-O atributo th:each itera sobre a lista convidados , atribuindo cada objeto na
-variável local convidado . Isso faz com que vários elementos tr sejam renderizados
-na página.
-Dentro de cada tr existem 2 elementos td . O texto que eles irão exibir vem do
-atributo th:text , junto com a expressão ${} , lendo as propriedades da variável
-local convidado .
+Também é inserido antes de fechar a tag ``<body>`` da página, essas duas importações de JavaScript:
+```sh
+<script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+```
+
+São utilizados atributos ``th:href`` do Thymeleaf permitem usar links de endereçamento com a expressão ``@{}``. Sua vantagem é colocar o contexto da ``th:src`` na aplicação. Já a expressão ``${}`` interpreta variáveis locais ou disponibilizadas pelo controller. Em relação ao atributo ``th:each`` itera sobre a lista de convidados, atribuindo cada objeto na variável local ``convidado``, desta maneira, é possível iterar com vários elementos ``<tr>`` renderizando-os na página.
+```sh
+
+```
+
+Dentro de cada <tr> existem 2 elementos <td>. A *string* a ser apresentada vem do atributo ``th:text``, trabalha em conjunto com a expressão ``${}``, ao ler as propriedades da variável local ``convidado`` que são provenientes da classe Convidados, presente em Model. Já o ``th:each``, usa da expressão adicionando o objeto de controller ``${convidados}`` para recuperar o objeto de Model, que possui uma lista de objetos.
+```sh
+<tr th:each="convidado : ${convidados}">
+	<td th:text="${convidado.nome}"></td>
+	<td th:text="${convidado.quantidadeAcompanhantes}"></td>
+</tr>
+```
+Na elemento ``panel`` também foi implementado um formulário a fim de ser preenchido o nome e a quantidade de acompanhantes de um convidado.
+Abaixo segue o código adicionado ao documento HTML ``listaconvidados``
+```sh
+<form class="form-inline" method="POST" style="margin: 20px 0">
+	<div class="form-group">
+		<input type="text" class="form-control" placeholder="Nome"/>
+		<input type="text" class="form-control" placeholder="Acompanhantes"/>
+		<button type="submit" class="btn btn-primary">Adicionar</button>
+	</div>
+</form>
+```
+A primeira alteração será no método listar() do controller. Vamos adicionar um
+objeto do tipo Convidado no ModelAndView .
+O objeto criado em returnedList, o objeto ModelAndView é chamado de command object, que é o objeto que modela o formulário, ou seja, é ele que será setado com os valores das tags input da página. Para que o Thymeleaf possa usar este objeto no formulário, foi adicionado o atributo ``th:object`` na tag ``<form>``.
+```sh
+<form class="form-inline" method="POST" th:object="${convidado}" style="margin: 20px 0">
+```
+E nos campos de entrada, foi utilizado as propriedades do objeto “convidado” nos inputs, usando ``th:field``, utilizando a expressão ``*{}`` para selecionar a propriedade do objeto.
+```sh
+<input type="text" class="form-control" placeholder="Nome" th:field="*{nome}"/>
+<input type="text" class="form-control" placeholder="Acompanhantes" th:field="*{quantidadeAcompanhantes}"/>
+```
+
+Este objeto é do tipo Convidado e suas propriedades nome e quantidadeAcompanhantes estão ligadas aos elementos input do form.
+
+Também é passado o parâmetro ``th:action="@{/convidados}"`` que orienta ao Thymeleaf em qual endereço deve enviar os dados.
+```sh
+<form class="form-inline" method="POST" th:object="${convidado}" th:action="@{/convidados}" style="margin: 20px 0">
+```
+
+A expressão ``@{}`` é utilizada para utilizar os links no HTML, pois resolve o ``context path`` da aplicação automaticamente, permitindo desta forma, utilizar o método savedConvidado anotado com o @PostMapping na classe Controller.
+
+### O Uso do MySQL
 
 ## Exemplo de uso
 
@@ -226,9 +279,11 @@ npm test
 4. _Push_ (`git push origin feature/fooBar`)
 5. Crie um novo _Pull Request_
 
-[npm-image]: https://img.shields.io/npm/v/datadog-metrics.svg?style=flat-square
-[npm-url]: https://spring.io/
-[npm-downloads]: https://img.shields.io/npm/dm/datadog-metrics.svg?style=flat-square
-[travis-image]: https://img.shields.io/travis/dbader/node-datadog-metrics/master.svg?style=flat-square
-[travis-url]: https://travis-ci.org/dbader/node-datadog-metrics
-[wiki]: https://github.com/seunome/seuprojeto/wiki
+## Agradecimentos
+Obrigado por ter visto meus esforços para criar um modelo de roteamento de páginas com o Node Express! :octocat:
+
+
+Como diria um antigo mestre:
+> *"Cedo ou tarde, você vai aprender, assim como eu aprendi, que existe uma diferença entre CONHECER o caminho e TRILHAR o caminho."*
+>
+> *Morpheus - The Matrix*
