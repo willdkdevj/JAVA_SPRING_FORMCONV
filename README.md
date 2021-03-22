@@ -2,7 +2,7 @@
 > Este projeto consiste na aplicação simples de uma ferramenta de gestão de um evento, nele foram utilizadas as tecnologias Spring Boot, Spring MVC, Spring Data, Spring Security e Thymeleaf, utilizando a facilidade do Spring Tool Suíte (STS) da IDE Eclipse, com integração com o gerenciador de banco de dados MySQL e com o gerenciamento de dependências realizadas com o Maven. 
 
 [![Spring Badge](https://img.shields.io/badge/-Spring-brightgreen?style=flat-square&logo=Spring&logoColor=white&link=https://spring.io/)](https://spring.io/)
-[![Maven Badge](https://img.shields.io/badge/-Maven-000?style=flat-square&logo=Maven&logoColor=white&link=https://maven.apache.org/)](https://maven.apache.org/)
+[![Maven Badge](https://img.shields.io/badge/-MAVEN-000?style=flat-square&logo=MAVEN&logoColor=white&link=https://maven.apache.org/)](https://maven.apache.org/)
 [![MySQL Badge](https://img.shields.io/badge/-MySQL-blue?style=flat-square&logo=MySQL&logoColor=white&link=https://www.mysql.com/)](https://www.mysql.com/)
 
 
@@ -120,8 +120,8 @@ Já o método savedObjects() recebe um Convidado através do conceito do Thymele
 
 Também foi injetado a dependência (Dependency Injection - DI) ao contexto MVC ao implementarmos o objeto Convidados que é uma interface, na qual estende a JpaRepository, onde ao utilizar a anotação @Autowired que avisa ao Spring Framework para injetar uma instância de Convidado.
 ```sh
-	@Autowired
-	private Convidados convidados;
+@Autowired
+private Convidados convidados;
 ``` 
 
 Isto é possível por que a interface Convidados estende a interface JpaRepository, que possuí alguns métodos que fornecem vários recursos para trabalhar com ORM. Vejamos sua implementação (Note que foi criado o pacote repository para colocar a interface):
@@ -166,7 +166,7 @@ public class Convidado implements Serializable{
 
 As anotações @Entity torna a classe uma representante (entidade) do banco de dados, já as anotações @Id e @GeneratedValue são para marcar a propriedade como identificador (corresponde a Chave Primária (PK) na tabela) e solicitar que o Hibernate gerencie o incremento do ID automaticamente, respectivamente.
 
-### Spring MVC - Camada View
+### Spring MVC - Camada View (com Thymeleaf)
 A anotação @GetMapping presente na classe ConvidadosController do pacote controller, indica ao método que responda a requisição HTTP (GET) para view convidados, ao criar o objeto ModelAndView foi passado em seu construtor o nome do arquivo HTML a ser retornado ao cliente, denominado ``listaconvidados``.
 ```sh
 	ModelAndView mav = new ModelAndView("listaconvidados");
@@ -236,52 +236,92 @@ A primeira alteração será no método listar() do controller. Vamos adicionar 
 objeto do tipo Convidado no ModelAndView .
 O objeto criado em returnedList, o objeto ModelAndView é chamado de command object, que é o objeto que modela o formulário, ou seja, é ele que será setado com os valores das tags input da página. Para que o Thymeleaf possa usar este objeto no formulário, foi adicionado o atributo ``th:object`` na tag ``<form>``.
 ```sh
-<form class="form-inline" method="POST" th:object="${convidado}" style="margin: 20px 0">
+<form class="form-inline" method="post" th:object="${convidado}">
 ```
 E nos campos de entrada, foi utilizado as propriedades do objeto “convidado” nos inputs, usando ``th:field``, utilizando a expressão ``*{}`` para selecionar a propriedade do objeto.
 ```sh
-<input type="text" class="form-control" placeholder="Nome" th:field="*{nome}"/>
-<input type="text" class="form-control" placeholder="Acompanhantes" th:field="*{quantidadeAcompanhantes}"/>
+<input type="text" class="form-control" placeholder="Nome Completo" th:field="*{nome}" />
+<input type="text" class="form-control" placeholder="Nº Acompanhantes" size="15" maxlength="4" th:field="*{quantidadeAcompanhantes}" />
 ```
 
 Este objeto é do tipo Convidado e suas propriedades nome e quantidadeAcompanhantes estão ligadas aos elementos input do form.
 
 Também é passado o parâmetro ``th:action="@{/convidados}"`` que orienta ao Thymeleaf em qual endereço deve enviar os dados.
 ```sh
-<form class="form-inline" method="POST" th:object="${convidado}" th:action="@{/convidados}" style="margin: 20px 0">
+<form class="form-inline" method="post" th:object="${convidado}" th:action="@{/convidados}" style="margin: 20px 0">
 ```
 
 A expressão ``@{}`` é utilizada para utilizar os links no HTML, pois resolve o ``context path`` da aplicação automaticamente, permitindo desta forma, utilizar o método savedConvidado anotado com o @PostMapping na classe Controller.
 
-### O Uso do MySQL
-
-## Exemplo de uso
-
-Alguns exemplos interessantes e úteis sobre como seu projeto pode ser utilizado. Adicione blocos de códigos e, se necessário, screenshots.
-
-_Para mais exemplos, consulte a [Wiki][wiki]._ 
-
-## Configuração para Desenvolvimento
-
-Descreva como instalar todas as dependências para desenvolvimento e como rodar um test-suite automatizado de algum tipo. Se necessário, faça isso para múltiplas plataformas.
-
+### Aplicando Segurança a Aplicação Através do Spring Security
+Para aplicar um nível de segurança a aplicação, utilizamos o Spring Security, que fornece, em conjunto com o Spring Boot, já é implementada a aplicação ao implmentá-lo no arquivo pom.xml. Desta forma, segue a dependência necessária a ser incluída:
 ```sh
-make install
-npm test
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-security</artifactId>
+</dependency>
 ```
 
+Para criar usuários para administrar, gerenciar ou operar a aplicação foi incluído alguns usuários através da criação da classe ``InMemorySecurityConfig`` criando o pacote ``config`` no pacote padrão da aplicação
+```sh
+package br.com.supernova.convidados.config;
 
-## Contributing
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 
-1. Faça o _fork_ do projeto (<https://github.com/yourname/yourproject/fork>)
+@Configuration
+public class InMemorySegurityConfig {
+
+	@Autowired
+	public void configureGlobal(AuthenticationManagerBuilder builder) throws Exception {
+		builder
+			.inMemoryAuthentication()
+			.withUser("william").password("{noop}_senha_).roles("ADMIN")
+			.and()
+			.withUser("derek").password("{noop}_senha_").roles("USER")
+			.and()
+			.withUser("convidado").password("{noop}_senha_").roles("USER");
+	}
+}
+```
+
+A anotação @Configuration torna a classe ``InMemorySecurityConfig``, onde esta classe pode configurar quaisquer configurações do Spring, mas a utilizamos para autenticar usuários.
+O método configureGlobal, anotado com @Autowired, é uma convenção adotada para configurar o ``AuthenticationManagerBuilder``, na qual criamos três usuários para autenticar e parametrizar seu nível de autorização dentro da aplicação.
+Para utilizarmos o Spring Security é necessário reiniciar o servidor Spring (TOMCAT-Embedado).
+
+### O Uso do MySQL
+Ao utilizar o JPA (através do Spring Data) podemos utilizar para configurar e até mesmo trocar o banco de dados, no ínicio do projeto foi incluso o H2, que é um banco que utiliza a memória para instanciar dados, mas é utilizada somente para testes. Para a aplicação foi selecionado o SGBD MySQL, mas poderia ser qualquer outro como o PostgreSQL, para isso, foi implementado o arquivo pom.xml com a dependẽncia do driver JDBC abaixo:
+```sh
+<dependency>
+	<groupId>mysql</groupId>
+	<artifactId>mysql-connector-java</artifactId>
+	<scope>runtime</scope>
+</dependency>
+```
+
+Para concluir, foi implementado o arquivo application.properties informado a URL de conexão do JDBC, usuário e senha, além de parametrizar o hibernate a criar e excluir o banco após reiniciar a aplicação. O caminho do arquivo encontra-se em ``src/main/resources/``: 
+```sh
+spring.datasource.url=jdbc:mysql://localhost/_nome_bancodados
+spring.datasource.username=root
+spring.datasource.password=_senha_banco
+spring.jpa.hibernate.ddl-auto=create-drop
+```
+
+Utilizamos o banco ``supernova_tech`` criado no MySQL, sem tabelas ou qualquer outro objeto do banco, quanto ao usuário foi utilizado o root e a senha que foi atribuído a ele. Além disso, foi configurado a propriedade ``ddl-auto``, para recriar o banco de dados todas as vezes que o projeto se iniciar. 
+> Esta configuração não pode ser implementada em Ambiente de Produção
+
+## Contribuição
+
+1. Faça o _fork_ do projeto (<https://github.com/willdkdevj/JAVA_SPRING_FORMCONV/fork>)
 2. Crie uma _branch_ para sua modificação (`git checkout -b feature/fooBar`)
 3. Faça o _commit_ (`git commit -am 'Add some fooBar'`)
 4. _Push_ (`git push origin feature/fooBar`)
 5. Crie um novo _Pull Request_
 
 ## Agradecimentos
-Obrigado por ter visto meus esforços para criar um modelo de roteamento de páginas com o Node Express! :octocat:
 
+Obrigado por ter acompanhado aos meus esforços para criar este Projeto utilizando o Maven e a estrutura do Spring! :octocat:
 
 Como diria um antigo mestre:
 > *"Cedo ou tarde, você vai aprender, assim como eu aprendi, que existe uma diferença entre CONHECER o caminho e TRILHAR o caminho."*
