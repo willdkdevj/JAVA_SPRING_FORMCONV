@@ -169,7 +169,38 @@ public class Convidado implements Serializable{
 
 As anotações @Entity torna a classe uma representante (entidade) do banco de dados, já as anotações @Id e @GeneratedValue são para marcar a propriedade como identificador (corresponde a Chave Primária (PK) na tabela) e solicitar que o Hibernate gerencie o incremento do ID automaticamente, respectivamente.
 
+### Spring MVC - Camada View
+A anotação @GetMapping presente na classe ConvidadosController do pacote controller, indica ao método que responda a requisição HTTP (GET) para view convidados, ao criar o objeto ModelAndView foi passado em seu construtor o nome do arquivo HTML a ser retornado ao cliente, denominado ``listaconvidados``.
+```sh
+	ModelAndView mav = new ModelAndView("listaconvidados");
+```
 
+Desta forma, foi desenvolvido este arquivo implementando com outras tecnologias a fim de torná-lo responsivo a qualquer tipo de dispositivo utilizando o Bootstrap no Thymeleaf, que recebe os objetos Java enviados pelo Controller convertendo-os em HTML "puro". O Thymeleaf não é vigente do Spring Framework, mas é uma biblioteca que foi criada para facilitar a criação de camada de View, sendo uma alternativa ao uso de Java Server Pages (JSP).
+
+A configuração (default) do Spring Boot implementado com a biblioteca do Thymeleaf, define que a View deve ficar no seguinte pacote ``src/main/resources/templates``, ao invés de criarmos um pacote view no caminho do projeto Spring. Desta forma, ao criar o arquivo HTML definidos a seguinte estrutura para o documento:
+```sh
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width" />
+	<title>Lista de Convidados</title>
+	<link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet"/>
+	<link th:href="@{/webjars/bootstrap/css/bootstrap-theme.min.css}" rel="stylesheet"/>
+</head
+```
+
+O ``xmlns`` presente na tag ``<html>`` especifica o *namespace* XML ao documento, que significa que sempre deverá ser aberto e fechado as tag's HTML por se tratar de um documento do tipo XHTML, note que também existe o ``xmlns:th`` que define que será permitido o uso das propriedades do Thymeleaf.
+
+
+A expressão ${} interpreta variáveis locais ou disponibilizadas pelo controller.
+O atributo th:each itera sobre a lista convidados , atribuindo cada objeto na
+variável local convidado . Isso faz com que vários elementos tr sejam renderizados
+na página.
+Dentro de cada tr existem 2 elementos td . O texto que eles irão exibir vem do
+atributo th:text , junto com a expressão ${} , lendo as propriedades da variável
+local convidado .
 
 ## Exemplo de uso
 
